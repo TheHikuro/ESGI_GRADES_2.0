@@ -9,8 +9,7 @@ interface RowData {
 }
 
 const ScannerPage = () => {
-    const tableRef = React.useRef<HTMLTableElement | null>(null);
-    const [tab, setTab] = React.useState<string | null>();
+    const [tableData, setTableData] = React.useState<RowData[]>([]);
     const router = useNavigate();
 
     const sender: ChromeMessage = {
@@ -23,11 +22,11 @@ const ScannerPage = () => {
             id &&
                 chrome.tabs.sendMessage(
                     id,
-                    sender,
+                    { message: "findTable" },
                     (response) => {
                         console.log(response);
-                        if (response) {
-                            setTab(Object.values(response).join(" "));
+                        if (response && response.tableData) {
+                            setTableData(response.tableData);
                         }
                     }
                 )
@@ -38,12 +37,22 @@ const ScannerPage = () => {
         <div className="space-x-2">
             <button onClick={handleScanForTable} className="btn btn-primary">Scan for table</button>
             <button onClick={() => router('/results')} className="btn btn-success">Découvrir ma moyenne 🤞</button>
-            {tab && (
-                <React.Fragment>
-                    <pre>{tab}</pre>
-                    <table ref={tableRef} className="table"></table>
-                </React.Fragment>
-            )}
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Matière</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tableData.map((row) => (
+                        <tr>
+                            <td>{row.matiere}</td>
+                            <td>{row.note}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };
